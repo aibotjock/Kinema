@@ -12,6 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildWorkflow } from './workflow.mjs';
 import { buildH3 } from './workflows/h3.mjs';
+import { buildHunyuan } from './workflows/hunyuan.mjs';
 import { MODELS, DEFAULT_MODEL } from './models.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -80,6 +81,8 @@ async function startGeneration({ prompt, negative, aspect, duration, seed, model
     if (mode === 'i2v' && image) imageNode = '90';
     workflow = buildH3({ prompt, aspect, resolution, duration, seed, imageNode });
     if (imageNode) workflow['90'] = { class_type: 'LoadImage', inputs: { image } };
+  } else if (model === 'hunyuan-1-5') {
+    workflow = buildHunyuan({ prompt, negative, aspect, resolution, duration, seed, engineTag: engine.tag });
   } else if (model === 'wan-2-2') {
     const wanAspect = { landscape: '16:9', portrait: '9:16', square: '1:1' }[aspect] || '16:9';
     workflow = buildWorkflow({ prompt, negative, aspect: wanAspect, duration, seed, engineTag: engine.tag });
@@ -235,7 +238,10 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/models' && req.method === 'GET') {
       const engine = engines.find((e) => e.alive) || engines[0];
       let pool = [];
-      try { pool = (await comfy(engine, '/object_info/UNETLoader')).UNETLoader.input.required.unet_name[0] || []; } catch { /* engine down */ }
+      try {
+        const combo = (await comfy(engine, '/object_info/UNETLoader')).UNETLoader.input.required.unet_name;
+        pool = Array.isArray(combo[0]) ? combo[0] : (combo[1]?.options || []); // 0.32- vs 0.33-format combos
+      } catch { /* engine down */ }
       return send(200, {
         default: DEFAULT_MODEL,
         models: MODELS.map((m) => ({ ...m, installed: m.installed ?? m.required.every((f) => pool.includes(f)) })),

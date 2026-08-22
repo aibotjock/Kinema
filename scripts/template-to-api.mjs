@@ -50,30 +50,31 @@ function resolveIntoSubgraph(instanceKey, inputName) {
 // — those sit after seed-like widgets and don't exist in API inputs.
 const CONTROL_TOKENS = new Set(['fixed', 'increment', 'decrement', 'randomize']);
 
+const OI = process.env.OI_SNAPSHOT ? JSON.parse(await readFile(process.env.OI_SNAPSHOT, 'utf8')) : {};
+const LINKY = new Set(['IMAGE', 'LATENT', 'MODEL', 'CLIP', 'VAE', 'CONDITIONING', 'NOISE', 'GUIDER', 'SAMPLER', 'SIGMAS', 'AUDIO', 'VIDEO', 'CONTROL_NET', 'MASK']);
+
 const api = {};
 for (const [key, node] of nodes) {
   if (node.type === 'MarkdownNote' || node.type === 'Note' || node.type === 'Reroute') continue;
   if (subgraphNodes.has(node.type)) continue; // bridged below via consumers
   const inputs = {};
   let w = [...node.widgets];
-  // Widget names for nodes whose template carries no inputs array (dynamic-IO nodes).
-  let oiNames = null;
-  if (node.inputs.length === 0 && node.widgets.length > 0 && process.env.OI_SNAPSHOT) {
-    const oi = JSON.parse(await readFile(process.env.OI_SNAPSHOT, 'utf8'))[node.type];
-    const order = [...(oi?.input?.required ? Object.keys(oi.input.required) : []), ...(oi?.input?.optional ? Object.keys(oi.input.optional) : [])];
-    oiNames = order.filter((n) => !['IMAGE', 'LATENT', 'MODEL', 'CLIP', 'VAE', 'CONDITIONING', 'NOISE', 'GUIDER', 'SAMPLER', 'SIGMAS', 'AUDIO', 'VIDEO'].includes(oi.input.required?.[n]?.[0] ?? oi.input.optional?.[n]?.[0]));
-  }
-  const inputList = node.inputs.length ? node.inputs : (oiNames || []).map((name) => ({ name, link: null }));
+  // Full input order from object_info: link inputs come from the template's inputs
+  // array (by name); every remaining name consumes widgets_values in order.
+  const oi = OI[node.type];
+  const order = [...(oi?.input?.required ? Object.keys(oi.input.required) : []), ...(oi?.input?.optional ? Object.keys(oi.input.optional) : [])];
+  const tmplInputs = new Map(node.inputs.map((i) => [i.name, i]));
+  const inputList = order.length
+    ? order.map((name) => tmplInputs.get(name) || { name, link: null })
+    : node.inputs; // unknown class: fall back to template inputs only
   for (const inp of inputList) {
-    if (inp.link != null) {
+    if (tmplInputs.has(inp.name) && inp.link != null) {
       let src = links.get(`${node.prefix || ''}|${inp.link}`) || null;
       let fromKey = src?.from, fromSlot = src?.fromSlot;
       if (fromKey && subgraphNodes.has(nodes.get(fromKey)?.type || '')) {
-        // source is a subgraph instance: map its output slot to the def output's internal link
         const inst = nodes.get(fromKey);
         const sg = subgraphNodes.get(inst.type);
-        const outSlot = fromSlot;
-        const sgOut = sg.outputs[outSlot];
+        const sgOut = sg.outputs[fromSlot];
         if (sgOut?.link != null) {
           for (const [k, v] of links) {
             if (k.startsWith(sg.prefix + '|') && k.endsWith('|' + sgOut.link)) { fromKey = v.from; fromSlot = v.fromSlot; break; }
@@ -86,8 +87,8 @@ for (const [key, node] of nodes) {
       if (fromKey) inputs[inp.name] = [fromKey, fromSlot];
     } else {
       let v = w.shift();
-      // skip frontend-only control_after_generate tokens
-      if (typeof v === 'string' && CONTROL_TOKENS.has(v) && typeof w[0] === 'number') v = undefined;
+      if (typeof v === 'string' && CONTROL_TOKENS.has(v) && typeof w[0] === 'number') v = undefined; // control_after_generate
+      if (Array.isArray(v) && !LINKY.has(String(v))) v = v; // grouped values pass through as-is
       if (v !== undefined) inputs[inp.name] = v;
     }
   }

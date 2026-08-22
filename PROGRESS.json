@@ -59,6 +59,12 @@
       "round": "model-program",
       "event": "foundation-laid",
       "note": "ComfyUI 0.27→0.33 (+230 commits, comfy-kitchen fixed). Wan regression PASS on 0.33 (cvu_00007). /mnt/data 770GB free = model store via extra_model_paths.yaml (HF cache/llama untouched). H3 downloading; LTX-2.5 + HunyuanVideo 1.5 720p queued behind it. Local templates confirmed: H3, LTX 2.5, Hunyuan 1.5. Wan 2.6/Mochi/CogVideoX/SkyReels lack local templates (Mochi native nodes exist; CogVideoX needs kijai wrapper; SkyReels rides Hunyuan graph)."
+    },
+    {
+      "t": "2026-08-22T22:35:06.834Z",
+      "round": "model-selector",
+      "event": "h3-e2e",
+      "note": "FIRST MiniMax H3 generation through Kinema: 480p 2s with audio stream, <60s wall on one 3090 at 23.1GB. Graph verified vs official 0.33 template. LTX-2.5 downloading with HF token (official repo, size-verified)."
     }
   ]
 }
