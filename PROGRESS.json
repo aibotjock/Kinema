@@ -65,6 +65,18 @@
       "round": "model-selector",
       "event": "h3-e2e",
       "note": "FIRST MiniMax H3 generation through Kinema: 480p 2s with audio stream, <60s wall on one 3090 at 23.1GB. Graph verified vs official 0.33 template. LTX-2.5 downloading with HF token (official repo, size-verified)."
+    },
+    {
+      "t": "2026-08-22T22:43:50.798Z",
+      "round": "model-selector",
+      "event": "hunyuan-valid",
+      "note": "Hunyuan 1.5 1080p graph validated + queued after converter v2 (widget-only inputs fix). LTX-2.5 blocked on one-time HF gate accept by user."
+    },
+    {
+      "t": "2026-08-22T22:58:56.812Z",
+      "round": "model-selector",
+      "event": "dual-hetero-proof",
+      "note": "Dual-engine heterogeneous proof: H3 on GPU1 (22.5GB, 100%) + Wan 2.2 on GPU0 (19.9GB, 100%) simultaneously via least-loaded dispatch. Both queued through model-selector branch UI API."
     }
   ]
 }

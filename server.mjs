@@ -67,14 +67,28 @@ async function comfy(engine, pathname, init) {
 // SaveVideo surfaces mp4s as images[] with animated:true (ComfyUI 0.27).
 const extractVideo = (nodeOut) => nodeOut.videos || nodeOut.gifs || (nodeOut.animated && nodeOut.images ? nodeOut.images : []);
 
-function pickEngine() {
+const queueDepthCache = new Map(); // engineId -> {t, n}
+async function queueDepth(engine) {
+  const c = queueDepthCache.get(engine.id);
+  if (c && Date.now() - c.t < 1500) return c.n;
+  let n = engine.active;
+  try {
+    const q = await comfy(engine, '/queue');
+    n = q.queue_running.length + q.queue_pending.length;
+  } catch { /* engine unreachable */ }
+  queueDepthCache.set(engine.id, { t: Date.now(), n });
+  return n;
+}
+
+async function pickEngine() {
   const alive = engines.filter((e) => e.alive);
   const pool = alive.length ? alive : engines; // fall back to first if ws lagging
-  return pool.sort((a, b) => a.active - b.active)[0];
+  const depths = await Promise.all(pool.map((e) => queueDepth(e)));
+  return pool[depths.indexOf(Math.min(...depths))];
 }
 
 async function startGeneration({ prompt, negative, aspect, duration, seed, model = DEFAULT_MODEL, resolution = 720, mode = 't2v', image }) {
-  const engine = pickEngine();
+  const engine = await pickEngine();
   let workflow;
   if (model === 'minimax-h3') {
     let imageNode = null;
