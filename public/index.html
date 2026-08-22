@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kinema — describe a video, get a video</title>
+<meta name="description" content="Turn a sentence into a short video, generated locally.">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b0b10'/><path d='M11 9l12 7-12 7z' fill='%23a78bfa'/></svg>">
+</head>
+<body>
+<header class="topbar">
+  <a class="wordmark" href="/" aria-label="Kinema home">
+    <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#14141c"/><path d="M11 9l12 7-12 7z" fill="#a78bfa"/></svg>
+    <span>Kinema</span>
+  </a>
+  <div class="topbar-right">
+    <span id="engine-pill" class="pill" data-state="checking" role="status">
+      <span class="dot" aria-hidden="true"></span><span id="engine-label">Engine…</span>
+    </span>
+    <button id="settings-btn" class="icon-btn" aria-label="Settings" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm9 4c0-.6-.05-1.17-.15-1.73l2-1.55-2-3.46-2.35.94A8.9 8.9 0 0015.9 4.6L15.5 2h-4l-.4 2.6a8.9 8.9 0 00-2.6 1.6L6.15 5.26l-2 3.46 2 1.55c-.1.56-.15 1.13-.15 1.73s.05 1.17.15 1.73l-2 1.55 2 3.46 2.35-.94a8.9 8.9 0 002.6 1.6l.4 2.6h4l.4-2.6a8.9 8.9 0 002.6-1.6l2.35.94 2-3.46-2-1.55c.1-.56.15-1.13.15-1.73z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <section id="hero" class="hero" aria-labelledby="hero-title">
+    <h1 id="hero-title">What do you want to see?</h1>
+    <p class="hero-sub">Describe it in a sentence. Kinema makes the video — right here on this machine.</p>
+    <form id="compose" class="compose" autocomplete="off">
+      <div class="compose-row">
+        <textarea id="prompt" rows="1" placeholder="A neon koi drifting through a rainy Tokyo alley, reflections on wet asphalt…" aria-label="Describe your video" required></textarea>
+        <button id="generate" type="submit" class="primary" aria-label="Generate video">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2l1.9 5.7L19.6 9l-4.6 3.5L16.5 19 12 15.9 7.5 19l1.5-6.5L4.4 9l5.7-1.3z"/></svg>
+          <span>Generate</span>
+        </button>
+      </div>
+      <div class="chips" role="group" aria-label="Video shape">
+        <fieldset class="chip-group"><legend class="sr-only">Aspect ratio</legend>
+          <button type="button" class="chip" data-aspect="16:9" aria-pressed="true">Landscape</button>
+          <button type="button" class="chip" data-aspect="9:16" aria-pressed="false">Portrait</button>
+          <button type="button" class="chip" data-aspect="1:1" aria-pressed="false">Square</button>
+        </fieldset>
+        <fieldset class="chip-group"><legend class="sr-only">Duration</legend>
+          <button type="button" class="chip" data-duration="2" aria-pressed="false">2s</button>
+          <button type="button" class="chip" data-duration="4" aria-pressed="true">4s</button>
+          <button type="button" class="chip" data-duration="6" aria-pressed="false">6s</button>
+        </fieldset>
+        <span class="chips-note">made locally · no account, no cloud</span>
+      </div>
+    </form>
+  </section>
+
+  <section id="library" class="library" aria-labelledby="library-title" hidden>
+    <div class="library-head">
+      <h2 id="library-title">Your videos</h2>
+      <span id="library-count" class="muted"></span>
+    </div>
+    <div id="grid" class="grid"></div>
+  </section>
+
+  <section class="empty" id="empty-hint">
+    <div class="empty-card">
+      <p>First time here? Try something with motion in it — water, smoke, streets, light.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span class="muted">Runs entirely on your GPUs — nothing leaves this machine.</span>
+</footer>
+
+<div id="player" class="modal" role="dialog" aria-modal="true" aria-label="Video player" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <figure class="player-card">
+    <video id="player-video" controls autoplay loop muted playsinline></video>
+    <figcaption>
+      <p id="player-prompt"></p>
+      <div class="player-actions">
+        <a id="player-download" class="ghost" download>Download</a>
+        <button id="player-remix" type="button" class="ghost">Remix</button>
+        <button type="button" class="ghost" data-close>Close</button>
+      </div>
+    </figcaption>
+  </figure>
+</div>
+
+<div id="drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Settings" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="drawer-card">
+    <h2>Settings</h2>
+    <label class="field"><span>Seed</span>
+      <select id="set-seed">
+        <option value="auto" selected>Surprise me every time</option>
+        <option value="lock">Lock next seed</option>
+      </select>
+    </label>
+    <p class="field-note">Quality is fixed at 480p for speed. Longer videos and higher resolutions arrive with the next engine.</p>
+    <p class="field-note" id="set-engine"></p>
+    <button type="button" class="ghost" data-close>Done</button>
+  </div>
+</div>
+
+<script src="/app.js" type="module"></script>
+</body>
+</html>

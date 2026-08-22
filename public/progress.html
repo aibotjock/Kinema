@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kinema — build progress</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="wordmark" href="/" aria-label="Back to Kinema">
+    <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#14141c"/><path d="M11 9l12 7-12 7z" fill="#a78bfa"/></svg>
+    <span>Kinema · progress</span>
+  </a>
+</header>
+<main>
+  <section class="hero compact" aria-labelledby="pg-title">
+    <h1 id="pg-title">Build progress</h1>
+    <p class="hero-sub">Live ledger of the gauntlet loop building this app — refreshes every 5 seconds.</p>
+  </section>
+  <section class="library" aria-label="Round ledger">
+    <div class="library-head"><h2>Rounds</h2><span id="pg-count" class="muted"></span></div>
+    <div id="pg-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </section>
+</main>
+<script type="module">
+const list = document.getElementById('pg-list');
+async function tick() {
+  let data = { rounds: [] };
+  try { data = await (await fetch('/PROGRESS.json')).json(); } catch {}
+  document.getElementById('pg-count').textContent = data.rounds.length ? `${data.rounds.length} entries` : '';
+  list.replaceChildren(...data.rounds.slice(-40).reverse().map((r) => {
+    const el = document.createElement('article');
+    el.style.cssText = 'border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:12px 16px;background:#0e0e14;';
+    const head = document.createElement('p'); head.style.cssText = 'margin:0 0 4px;font-weight:600;';
+    head.textContent = `${r.t?.slice(11, 19) || ''} · ${r.round || r.event || ''} ${r.verdict ? '· ' + r.verdict : ''}`;
+    const body = document.createElement('p'); body.style.cssText = 'margin:0;color:#9a9aa8;font-size:.9rem;';
+    body.textContent = r.note || r.gap || '';
+    el.append(head, body);
+    return el;
+  }));
+}
+tick(); setInterval(tick, 5000);
+</script>
+</body>
+</html>

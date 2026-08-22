@@ -1,0 +1,52 @@
+{
+  "rounds": [
+    {
+      "t": "2026-08-22T18:20:19.928Z",
+      "round": "r1",
+      "event": "scaffold",
+      "note": "Server+frontend built (Kinema). Queuing first real Wan 2.2 T2V generation via the UI API."
+    },
+    {
+      "t": "2026-08-22T18:24:33.510Z",
+      "round": "r1",
+      "event": "e2e-proof",
+      "note": "Prompt-to-video proven through UI API: koi 2s clip generated + streams (200/206). 2nd gen queued. Gauntlet config aimed at / and /progress."
+    },
+    {
+      "t": "2026-08-22T18:31:26.331Z",
+      "round": "r1",
+      "event": "gate",
+      "note": "Evidence gate now passing after fixes: Buffer serialization, grid reconcile (no preload aborts), aria-label, poster thumbs via ffmpeg."
+    },
+    {
+      "t": "2026-08-22T18:32:04.364Z",
+      "round": "r1",
+      "event": "critic-panel",
+      "note": "Evidence PASS. 3 blind critics (user/visual/clarity lenses) judging vs the bar now. 3rd generation queued."
+    },
+    {
+      "t": "2026-08-22T18:39:33.760Z",
+      "round": "r2",
+      "event": "critic-verdicts",
+      "note": "Blind panel 2/3 for ours on BOTH desktop+mobile (user lens, clarity lens). Craft lens lost: flat thumbnails vs cinematic stage. Round 2: featured full-width stage for newest video, stronger type scale, unified pill states, 2-line captions, honest footer, ETA hint. Re-verified."
+    },
+    {
+      "t": "2026-08-22T18:45:19.830Z",
+      "round": "r3",
+      "event": "craft-fixes",
+      "note": "r3 shipped: at-rest video affordances (play badge + duration badges), warm-charcoal palette with white CTA, count as \"N videos\", honest footer. Gate PASS."
+    },
+    {
+      "t": "2026-08-22T19:16:12.089Z",
+      "round": "r4",
+      "event": "full-panel-rejudge",
+      "note": "Re-judging r3 state with all 3 critic modalities (user/craft/clarity), fresh contexts, assignments flipped."
+    },
+    {
+      "t": "2026-08-22T19:24:08.197Z",
+      "round": "r4",
+      "event": "full-panel-verdicts",
+      "note": "All 3 modalities re-judged r3 blind (assignments flipped): user lens OURS both viewports; clarity lens OURS both; craft lens OURS on mobile, Runway on desktop (5/6 picks ours). One craft verdict discarded + re-run — critic had judged a truncated/blank image. Remaining desktop-craft gap: caption contrast/legibility, grid rhythm, design-system consistency (radii/active states), CTA-vs-prompt balance."
+    }
+  ]
+}
