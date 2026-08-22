@@ -20,13 +20,13 @@ async function checkEngine() {
     const j = await r.json();
     if (j.comfyui) {
       pill.dataset.state = 'on';
-      label.textContent = 'Local engine ready';
-      if (note) note.textContent = `Engine: ComfyUI ${j.version || ''} · ${j.gpus?.length || '?'} GPU${j.gpus?.length === 1 ? '' : 's'}`;
+      label.textContent = j.ready > 1 ? `${j.ready} engines ready · work split` : 'Local engine ready';
+      if (note) note.textContent = j.engines?.map((e) => `${e.id}: ComfyUI ${e.version || '?'}${e.ok ? '' : ' (offline)'}`).join(' · ') || `ComfyUI ${j.version || ''}`;
     } else throw 0;
   } catch {
     pill.dataset.state = 'off';
     label.textContent = 'Engine offline';
-    if (note) note.textContent = 'Engine offline — start ComfyUI on :8188';
+    if (note) note.textContent = 'Engine offline — start ComfyUI (see scripts/start-comfyui-dual.sh)';
   }
 }
 

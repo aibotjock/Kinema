@@ -19,7 +19,7 @@ const ASPECTS = {
 // Wan lengths satisfy 4k+1: 2s=33, 4s=65, 6s=97 at 16fps.
 const DURATIONS = { 2: 33, 4: 65, 6: 97 };
 
-export function buildWorkflow({ prompt, negative = '', aspect = '16:9', duration = 4, seed = Math.floor(Math.random() * 2 ** 48), steps = 4 }) {
+export function buildWorkflow({ prompt, negative = '', aspect = '16:9', duration = 4, seed = Math.floor(Math.random() * 2 ** 48), steps = 4, engineTag = '' }) {
   const { width, height } = ASPECTS[aspect] ?? ASPECTS['16:9'];
   const length = DURATIONS[duration] ?? DURATIONS[4];
   return {
@@ -38,6 +38,6 @@ export function buildWorkflow({ prompt, negative = '', aspect = '16:9', duration
     '13': { class_type: 'KSampler', inputs: { seed, steps, cfg: 1.0, sampler_name: 'euler', scheduler: 'simple', denoise: 1.0, model: ['8', 0], positive: ['9', 0], negative: ['10', 0], latent_image: ['12', 0] } },
     '14': { class_type: 'VAEDecode', inputs: { samples: ['13', 0], vae: ['2', 0] } },
     '15': { class_type: 'CreateVideo', inputs: { fps: 16, images: ['14', 0] } },
-    '16': { class_type: 'SaveVideo', inputs: { filename_prefix: 'video/cvu', format: 'mp4', codec: 'h264', video: ['15', 0] } },
+    '16': { class_type: 'SaveVideo', inputs: { filename_prefix: `video/cvu${engineTag}`, format: 'mp4', codec: 'h264', video: ['15', 0] } },
   };
 }

@@ -47,6 +47,26 @@ cd comfy-video-ui && node server.mjs
 
 A 2–6 second clip takes roughly 2–4 minutes warm on one RTX 3090.
 
+## Dual-GPU mode (this branch)
+
+ComfyUI can't split a single generation across GPUs, but each Wan 2.2 job fits one 24GB card —
+so `dual-gpu` runs **one ComfyUI instance per GPU** and Kinema dispatches every new generation
+to the **least-loaded engine**. Two videos render simultaneously; observed on 2×RTX 3090:
+both GPUs at ~18.4GB with two 2s clips completing in ~75s total (one video per GPU).
+
+```bash
+# one instance per GPU (skips ports already up)
+bash scripts/start-comfyui-dual.sh
+
+# start Kinema against both engines
+bash scripts/start-dual.sh        # → pill shows "2 engines ready · work split"
+```
+
+Details: engines come from `COMFY_URLS` (default `http://127.0.0.1:8188,http://127.0.0.1:8189`
+in `scripts/start-dual.sh`); each engine gets its own progress websocket and its own
+`SaveVideo` filename prefix (`cvu`, `cvu-e1`, …) so simultaneous saves never collide;
+history merges across engines; `/api/view` streams from any live engine (shared output dir).
+
 ## How it works
 
 - `workflow.mjs` composes the Wan 2.2 graph (high-noise shift 8.0 → low-noise shift 4.0, 4 steps each, cfg 1.0, euler/simple) and enforces Wan's 4k+1 frame rule per duration.
