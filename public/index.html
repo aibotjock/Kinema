@@ -25,6 +25,10 @@
 </header>
 
 <main id="main">
+  <section id="model-picker" class="model-picker" aria-label="Choose a video model">
+    <div id="model-cards" class="model-cards" role="radiogroup" aria-label="Video models"></div>
+  </section>
+
   <section id="hero" class="hero" aria-labelledby="hero-title">
     <h1 id="hero-title">What do you want to see?</h1>
     <p class="hero-sub">Describe it in a sentence. Kinema makes the video — right here on this machine.</p>
@@ -37,10 +41,19 @@
         </button>
       </div>
       <div class="chips" role="group" aria-label="Video shape">
+        <fieldset class="chip-group"><legend class="sr-only">Mode</legend>
+          <button type="button" class="chip" data-mode="t2v" aria-pressed="true">From text</button>
+          <button type="button" class="chip" data-mode="i2v" aria-pressed="false">From image</button>
+        </fieldset>
         <fieldset class="chip-group"><legend class="sr-only">Aspect ratio</legend>
-          <button type="button" class="chip" data-aspect="16:9" aria-pressed="true">Landscape</button>
-          <button type="button" class="chip" data-aspect="9:16" aria-pressed="false">Portrait</button>
-          <button type="button" class="chip" data-aspect="1:1" aria-pressed="false">Square</button>
+          <button type="button" class="chip" data-aspect="landscape" aria-pressed="true">Landscape</button>
+          <button type="button" class="chip" data-aspect="portrait" aria-pressed="false">Portrait</button>
+          <button type="button" class="chip" data-aspect="square" aria-pressed="false">Square</button>
+        </fieldset>
+        <fieldset class="chip-group" id="res-group"><legend class="sr-only">Resolution</legend>
+          <button type="button" class="chip" data-res="480" aria-pressed="false">480p</button>
+          <button type="button" class="chip" data-res="720" aria-pressed="true">720p</button>
+          <button type="button" class="chip" data-res="1080" aria-pressed="false">1080p</button>
         </fieldset>
         <fieldset class="chip-group"><legend class="sr-only">Duration</legend>
           <button type="button" class="chip" data-duration="2" aria-pressed="false">2s</button>
@@ -48,6 +61,13 @@
           <button type="button" class="chip" data-duration="6" aria-pressed="false">6s</button>
         </fieldset>
         <span class="chips-note">made locally · no account, no cloud</span>
+      </div>
+      <div id="i2v-slot" class="i2v-slot" hidden>
+        <label class="i2v-drop" for="i2v-file">
+          <span id="i2v-hint">Drop a starting image, or click to choose — the video grows from it.</span>
+          <img id="i2v-preview" alt="Starting image preview" hidden>
+          <input id="i2v-file" type="file" accept="image/*" hidden>
+        </label>
       </div>
     </form>
   </section>

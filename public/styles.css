@@ -251,3 +251,36 @@ textarea#prompt::placeholder { color: #6d6d7c; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ---------- model picker ---------- */
+.model-picker { margin-top: 6px; }
+.model-cards { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 12px; scroll-snap-type: x mandatory; }
+.model-card {
+  flex: 0 0 260px; scroll-snap-align: start; cursor: pointer; text-align: left;
+  display: flex; flex-direction: column; gap: 6px; padding: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  color: var(--text); font: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.model-card:hover { border-color: rgba(236, 234, 249, 0.35); transform: translateY(-2px); }
+.model-card.selected { border-color: #efece6; box-shadow: 0 0 0 1px #efece6 inset; }
+.model-card.missing { opacity: 0.55; }
+.mc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mc-name { font-weight: 650; font-size: 0.98rem; }
+.mc-on, .mc-off { font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.mc-on { color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); }
+.mc-off { color: var(--muted); border: 1px solid var(--line); }
+.mc-tag { font-size: 0.85rem; color: #d8d4cc; font-weight: 560; }
+.mc-exp { font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+.mc-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid var(--line); color: #d8d4cc; }
+.mc-speed { font-size: 0.72rem; color: #7d7871; }
+
+.i2v-slot { margin-top: 14px; }
+.i2v-drop {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  border: 1px dashed var(--line); border-radius: var(--radius); padding: 18px;
+  color: var(--muted); font-size: 0.88rem; cursor: pointer; transition: border-color 0.15s;
+}
+.i2v-drop.drag, .i2v-drop:hover { border-color: rgba(236, 234, 249, 0.5); color: var(--text); }
+.i2v-drop img { max-height: 120px; max-width: 200px; border-radius: 10px; }

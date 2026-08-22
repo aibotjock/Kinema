@@ -11,6 +11,8 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildWorkflow } from './workflow.mjs';
+import { buildH3 } from './workflows/h3.mjs';
+import { MODELS, DEFAULT_MODEL } from './models.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -70,9 +72,21 @@ function pickEngine() {
   return pool.sort((a, b) => a.active - b.active)[0];
 }
 
-async function startGeneration({ prompt, negative, aspect, duration, seed }) {
+async function startGeneration({ prompt, negative, aspect, duration, seed, model = DEFAULT_MODEL, resolution = 720, mode = 't2v', image }) {
   const engine = pickEngine();
-  const workflow = buildWorkflow({ prompt, negative, aspect, duration, seed, engineTag: engine.tag });
+  let workflow;
+  if (model === 'minimax-h3') {
+    let imageNode = null;
+    if (mode === 'i2v' && image) imageNode = '90';
+    workflow = buildH3({ prompt, aspect, resolution, duration, seed, imageNode });
+    if (imageNode) workflow['90'] = { class_type: 'LoadImage', inputs: { image } };
+  } else if (model === 'wan-2-2') {
+    const wanAspect = { landscape: '16:9', portrait: '9:16', square: '1:1' }[aspect] || '16:9';
+    workflow = buildWorkflow({ prompt, negative, aspect: wanAspect, duration, seed, engineTag: engine.tag });
+  } else {
+    const known = MODELS.find((m) => m.id === model);
+    throw new Error(known ? `${known.name} is not installed yet — its pipeline lands with its download` : `unknown model: ${model}`);
+  }
   const { prompt_id } = await comfy(engine, '/prompt', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -218,6 +232,24 @@ const server = http.createServer(async (req, res) => {
       return send(200, await jobStatus(url.pathname.split('/').pop()));
     }
     if (url.pathname === '/api/videos' && req.method === 'GET') return send(200, await videoHistory());
+    if (url.pathname === '/api/models' && req.method === 'GET') {
+      const engine = engines.find((e) => e.alive) || engines[0];
+      let pool = [];
+      try { pool = (await comfy(engine, '/object_info/UNETLoader')).UNETLoader.input.required.unet_name[0] || []; } catch { /* engine down */ }
+      return send(200, {
+        default: DEFAULT_MODEL,
+        models: MODELS.map((m) => ({ ...m, installed: m.installed ?? m.required.every((f) => pool.includes(f)) })),
+      });
+    }
+    if (url.pathname === '/api/upload/image' && req.method === 'POST') {
+      // Raw multipart passthrough to ComfyUI.
+      const engine = engines.find((e) => e.alive) || engines[0];
+      const chunks = [];
+      for await (const c of req) chunks.push(c);
+      const body = Buffer.concat(chunks);
+      const up = await fetch(`${engine.url}/upload/image`, { method: 'POST', headers: { 'content-type': req.headers['content-type'] }, body });
+      return send(up.status, await up.json());
+    }
     if (url.pathname === '/api/health') {
       const report = await Promise.all(engines.map(async (e) => {
         try {
