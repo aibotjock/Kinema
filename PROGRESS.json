@@ -77,6 +77,30 @@
       "round": "model-selector",
       "event": "dual-hetero-proof",
       "note": "Dual-engine heterogeneous proof: H3 on GPU1 (22.5GB, 100%) + Wan 2.2 on GPU0 (19.9GB, 100%) simultaneously via least-loaded dispatch. Both queued through model-selector branch UI API."
+    },
+    {
+      "t": "2026-08-22T22:59:58.677Z",
+      "round": "model-selector",
+      "event": "dispatch-fix",
+      "note": "Queue-depth-aware dispatch landed: engines weighed by real /queue, verified routing to idle GPU around a busy one."
+    },
+    {
+      "t": "2026-08-22T23:01:52.281Z",
+      "round": "model-selector",
+      "event": "gauntlet-start",
+      "note": "Three-bar unanimous picker gauntlet launched: Replicate video browse, Runway picker, HF Spaces. Evidence gate PASS."
+    },
+    {
+      "t": "2026-08-22T23:07:59.961Z",
+      "round": "model-selector",
+      "event": "gauntlet-r1",
+      "note": "Picker gauntlet R1: Replicate bar OURS (clean), Runway bar OURS (clean), HF Spaces FORFEIT (capture was a 400 page — critic detected it). Bar re-captured; re-judge pending. Critic notes for polish: spec strings are novice noise; badge/1080p consistency."
+    },
+    {
+      "t": "2026-08-22T23:11:03.079Z",
+      "round": "model-selector",
+      "event": "GAUNTLET-UNANIMOUS",
+      "note": "Picker gauntlet FINAL: 3/3 blind wins — Replicate video browse OURS, Runway picker surface OURS, HF Spaces OURS (re-captured after forfeit detection, re-judged clean). Exit condition met. Polish backlog from critics: spec-string noise, Wan badge consistency, card truncation."
     }
   ]
 }
