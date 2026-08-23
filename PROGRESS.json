@@ -113,6 +113,12 @@
       "piece": "round-2",
       "verdict": "3-of-5 clinched",
       "notes": "R2 (sides flipped): persona-creation, consent-capture, library win 2/2 both rounds. voice-clone split 1/1 (mobile: studio below fold). narration-video 0/2 (model picker dominates; script flow not primary). Round 3: persona-first hierarchy."
+    },
+    {
+      "t": "2026-08-23T22:21:05.471Z",
+      "piece": "final",
+      "verdict": "unanimous exit — all 5 pieces beat the HeyGen bar blind",
+      "notes": "R6 narration-video ours 2/2 (persona strip + seeded result film + persona-first hierarchy + demoted scene branch). Rounds: narration 0/2,0/2,0/2,VOID(contaminated reads),0/2,2/2. Others clinched by R2/R3. R4 lesson: never reuse evidence filenames across rounds; R5/R6 critics verified md5s + flagged own misreads."
     }
   ]
 }
