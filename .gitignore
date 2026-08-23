@@ -2,3 +2,7 @@ node_modules/
 .thumbs/
 references/
 *.log
+evidence/
+.venv-voice/
+evidence/
+media/

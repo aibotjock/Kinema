@@ -1,0 +1,517 @@
+{
+ "24": {
+  "class_type": "LoadAudio",
+  "inputs": {
+   "audio": "audio_speaker1_woman.mp3"
+  }
+ },
+ "32": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "two_character_talking.png"
+  }
+ },
+ "90": {
+  "class_type": "LoadAudio",
+  "inputs": {
+   "audio": "audio_speaker2_man.mp3"
+  }
+ },
+ "113": {
+  "class_type": "AudioConcat",
+  "inputs": {
+   "audio1": [
+    "24",
+    0
+   ],
+   "audio2": [
+    "90",
+    0
+   ],
+   "direction": "after"
+  }
+ },
+ "138": {
+  "class_type": "CreateVideo",
+  "inputs": {
+   "images": "{{IMAGES}}",
+   "fps": 25,
+   "audio": [
+    "113",
+    0
+   ],
+   "bit_depth": 8
+  }
+ },
+ "140": {
+  "class_type": "CreateVideo",
+  "inputs": {
+   "images": [
+    "172",
+    0
+   ],
+   "fps": 25,
+   "audio": [
+    "113",
+    0
+   ],
+   "bit_depth": 8
+  }
+ },
+ "141": {
+  "class_type": "SaveVideo",
+  "inputs": {
+   "video": [
+    "140",
+    0
+   ],
+   "filename_prefix": "video/ComfyUI",
+   "format": "auto",
+   "codec": "auto"
+  }
+ },
+ "162": {
+  "class_type": "SaveVideo",
+  "inputs": {
+   "video": [
+    "138",
+    0
+   ],
+   "filename_prefix": "video/ComfyUI",
+   "format": "auto",
+   "codec": "auto"
+  }
+ },
+ "172": {
+  "class_type": "BatchImagesNode",
+  "inputs": {}
+ },
+ "174": {
+  "class_type": "Painter",
+  "inputs": {
+   "mask": "",
+   "width": 1216,
+   "height": 960,
+   "bg_color": "#000000",
+   "image": [
+    "32",
+    0
+   ]
+  }
+ },
+ "175": {
+  "class_type": "Painter",
+  "inputs": {
+   "mask": "",
+   "width": 1216,
+   "height": 960,
+   "bg_color": "#000000",
+   "image": [
+    "32",
+    0
+   ]
+  }
+ },
+ "sg0:13": {
+  "class_type": "UNETLoader",
+  "inputs": {
+   "unet_name": "{{UNET_NAME}}",
+   "weight_dtype": "Wan2_1-I2V-14B-480p_fp8_e4m3fn_scaled_KJ.safetensors"
+  }
+ },
+ "sg0:16": {
+  "class_type": "CLIPLoader",
+  "inputs": {
+   "clip_name": "{{CLIP_NAME}}",
+   "type": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+   "device": "wan"
+  }
+ },
+ "sg0:29": {
+  "class_type": "VAELoader",
+  "inputs": {
+   "vae_name": "{{VAE_NAME}}"
+  }
+ },
+ "sg0:119": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "sg0:194",
+    0
+   ],
+   "vae": [
+    "sg0:29",
+    0
+   ]
+  }
+ },
+ "sg0:129": {
+  "class_type": "WanInfiniteTalkToVideo",
+  "inputs": {
+   "mode": "{{MODE}}",
+   "model": [
+    "sg0:179",
+    0
+   ],
+   "model_patch": [
+    "sg0:112",
+    0
+   ],
+   "positive": [
+    "sg0:14",
+    0
+   ],
+   "negative": [
+    "sg0:306",
+    0
+   ],
+   "vae": [
+    "sg0:29",
+    0
+   ],
+   "width": "{{WIDTH}}",
+   "height": "{{HEIGHT}}",
+   "length": "{{LENGTH}}",
+   "audio_encoder_output_1": [
+    "sg0:25",
+    0
+   ],
+   "motion_frame_count": "two_speakers",
+   "audio_scale": "{{AUDIO_SCALE}}",
+   "clip_vision_output": 832,
+   "start_image": "{{START_IMAGE}}",
+   "previous_frames": "{{PREVIOUS_FRAMES}}"
+  }
+ },
+ "sg0:14": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "{{PROMPT}}",
+   "clip": [
+    "sg0:16",
+    0
+   ]
+  }
+ },
+ "sg0:25": {
+  "class_type": "AudioEncoderEncode",
+  "inputs": {
+   "audio_encoder": [
+    "sg0:26",
+    0
+   ],
+   "audio": "{{AUDIO}}"
+  }
+ },
+ "sg0:93": {
+  "class_type": "AudioEncoderEncode",
+  "inputs": {
+   "audio_encoder": [
+    "sg0:26",
+    0
+   ],
+   "audio": "{{AUDIO}}"
+  }
+ },
+ "sg0:112": {
+  "class_type": "ModelPatchLoader",
+  "inputs": {
+   "name": "{{NAME}}"
+  }
+ },
+ "sg0:26": {
+  "class_type": "AudioEncoderLoader",
+  "inputs": {
+   "audio_encoder_name": "{{AUDIO_ENCODER_NAME}}"
+  }
+ },
+ "sg0:179": {
+  "class_type": "LoraLoaderModelOnly",
+  "inputs": {
+   "model": [
+    "sg0:13",
+    0
+   ],
+   "lora_name": "{{LORA_NAME}}",
+   "strength_model": "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors"
+  }
+ },
+ "sg0:190": {
+  "class_type": "KSamplerSelect",
+  "inputs": {
+   "sampler_name": "euler"
+  }
+ },
+ "sg0:191": {
+  "class_type": "CFGGuider",
+  "inputs": {
+   "model": [
+    "sg0:129",
+    0
+   ],
+   "positive": [
+    "sg0:129",
+    1
+   ],
+   "negative": [
+    "sg0:129",
+    2
+   ],
+   "cfg": 1
+  }
+ },
+ "sg0:192": {
+  "class_type": "BasicScheduler",
+  "inputs": {
+   "model": [
+    "sg0:129",
+    0
+   ],
+   "scheduler": "normal",
+   "steps": 6,
+   "denoise": 1
+  }
+ },
+ "sg0:193": {
+  "class_type": "RandomNoise",
+  "inputs": {
+   "noise_seed": "{{SEED}}"
+  }
+ },
+ "sg0:194": {
+  "class_type": "SamplerCustomAdvanced",
+  "inputs": {
+   "noise": [
+    "sg0:193",
+    0
+   ],
+   "guider": [
+    "sg0:191",
+    0
+   ],
+   "sampler": [
+    "sg0:190",
+    0
+   ],
+   "sigmas": [
+    "sg0:192",
+    0
+   ],
+   "latent_image": [
+    "sg0:129",
+    3
+   ]
+  }
+ },
+ "sg0:306": {
+  "class_type": "ConditioningZeroOut",
+  "inputs": {
+   "conditioning": [
+    "sg0:14",
+    0
+   ]
+  }
+ },
+ "sg1:307": {
+  "class_type": "UNETLoader",
+  "inputs": {
+   "unet_name": "{{UNET_NAME}}",
+   "weight_dtype": "Wan2_1-I2V-14B-480p_fp8_e4m3fn_scaled_KJ.safetensors"
+  }
+ },
+ "sg1:308": {
+  "class_type": "CLIPLoader",
+  "inputs": {
+   "clip_name": "{{CLIP_NAME}}",
+   "type": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+   "device": "wan"
+  }
+ },
+ "sg1:309": {
+  "class_type": "VAELoader",
+  "inputs": {
+   "vae_name": "{{VAE_NAME}}"
+  }
+ },
+ "sg1:310": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "sg1:322",
+    0
+   ],
+   "vae": [
+    "sg1:309",
+    0
+   ]
+  }
+ },
+ "sg1:311": {
+  "class_type": "WanInfiniteTalkToVideo",
+  "inputs": {
+   "mode": "{{MODE}}",
+   "model": [
+    "sg1:317",
+    0
+   ],
+   "model_patch": [
+    "sg1:315",
+    0
+   ],
+   "positive": [
+    "sg1:312",
+    0
+   ],
+   "negative": [
+    "sg1:323",
+    0
+   ],
+   "vae": [
+    "sg1:309",
+    0
+   ],
+   "width": "{{WIDTH}}",
+   "height": "{{HEIGHT}}",
+   "length": "{{LENGTH}}",
+   "audio_encoder_output_1": [
+    "sg1:313",
+    0
+   ],
+   "motion_frame_count": "two_speakers",
+   "audio_scale": "{{AUDIO_SCALE}}",
+   "clip_vision_output": 832,
+   "start_image": "{{START_IMAGE}}",
+   "previous_frames": "{{PREVIOUS_FRAMES}}"
+  }
+ },
+ "sg1:312": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "{{PROMPT}}",
+   "clip": [
+    "sg1:308",
+    0
+   ]
+  }
+ },
+ "sg1:313": {
+  "class_type": "AudioEncoderEncode",
+  "inputs": {
+   "audio_encoder": [
+    "sg1:316",
+    0
+   ],
+   "audio": "{{AUDIO}}"
+  }
+ },
+ "sg1:314": {
+  "class_type": "AudioEncoderEncode",
+  "inputs": {
+   "audio_encoder": [
+    "sg1:316",
+    0
+   ],
+   "audio": "{{AUDIO}}"
+  }
+ },
+ "sg1:315": {
+  "class_type": "ModelPatchLoader",
+  "inputs": {
+   "name": "{{NAME}}"
+  }
+ },
+ "sg1:316": {
+  "class_type": "AudioEncoderLoader",
+  "inputs": {
+   "audio_encoder_name": "{{AUDIO_ENCODER_NAME}}"
+  }
+ },
+ "sg1:317": {
+  "class_type": "LoraLoaderModelOnly",
+  "inputs": {
+   "model": [
+    "sg1:307",
+    0
+   ],
+   "lora_name": "{{LORA_NAME}}",
+   "strength_model": "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors"
+  }
+ },
+ "sg1:318": {
+  "class_type": "KSamplerSelect",
+  "inputs": {
+   "sampler_name": "euler"
+  }
+ },
+ "sg1:319": {
+  "class_type": "CFGGuider",
+  "inputs": {
+   "model": [
+    "sg1:311",
+    0
+   ],
+   "positive": [
+    "sg1:311",
+    1
+   ],
+   "negative": [
+    "sg1:311",
+    2
+   ],
+   "cfg": 1
+  }
+ },
+ "sg1:320": {
+  "class_type": "BasicScheduler",
+  "inputs": {
+   "model": [
+    "sg1:311",
+    0
+   ],
+   "scheduler": "normal",
+   "steps": 6,
+   "denoise": 1
+  }
+ },
+ "sg1:321": {
+  "class_type": "RandomNoise",
+  "inputs": {
+   "noise_seed": "{{SEED}}"
+  }
+ },
+ "sg1:322": {
+  "class_type": "SamplerCustomAdvanced",
+  "inputs": {
+   "noise": [
+    "sg1:321",
+    0
+   ],
+   "guider": [
+    "sg1:319",
+    0
+   ],
+   "sampler": [
+    "sg1:318",
+    0
+   ],
+   "sigmas": [
+    "sg1:320",
+    0
+   ],
+   "latent_image": [
+    "sg1:311",
+    3
+   ]
+  }
+ },
+ "sg1:323": {
+  "class_type": "ConditioningZeroOut",
+  "inputs": {
+   "conditioning": [
+    "sg1:312",
+    0
+   ]
+  }
+ }
+}

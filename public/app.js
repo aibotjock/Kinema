@@ -263,3 +263,164 @@ $('#settings-btn').addEventListener('click', () => { $('#drawer').hidden = false
 loadModels();
 checkEngine(); setInterval(checkEngine, 30000);
 refreshLibrary(); setInterval(refreshLibrary, 8000);
+
+/* ---------- persona studio ---------- */
+const studio = {
+  persona: null,
+  async load() {
+    let list = [];
+    try { list = await (await fetch('/api/personas')).json(); } catch { return; }
+    const wrap = document.getElementById('persona-cards');
+    wrap.replaceChildren(...list.map((p) => {
+      const b = document.createElement('div');
+      b.className = 'model-card persona-card' + (studio.persona === p.id ? ' selected' : '');
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(studio.persona === p.id));
+      b.tabIndex = 0;
+      b.innerHTML = `
+        ${p.imageUrl ? `<img class="mc-face" src="${p.imageUrl}" alt="${p.name}'s face">` : ''}
+        <span class="mc-head"><span class="mc-name">${p.name}</span>${p.consentGranted ? '<span class="mc-on">consented</span>' : '<span class="mc-off">no consent</span>'}</span>
+        <span class="mc-tag">${p.tagline || 'persona'}</span>
+        <span class="mc-exp">Voice: ${p.hasVoiceSample ? 'cloned from consented sample' : 'none yet'} · consent by ${p.consentBy || '—'} on ${p.consentDate?.slice(0, 10) || ''}</span>
+        <span class="pc-actions">
+          <button type="button" class="pc-btn pc-pick"${p.hasVoiceSample ? '' : ' disabled'}>${p.hasVoiceSample ? '▶ Hear voice' : 'no voice yet'}</button>
+          <button type="button" class="pc-btn pc-del" title="Delete persona and its cloned voice (revokes consent)">✕ delete</button>
+        </span>
+        <span class="mc-use">${studio.persona === p.id ? '✓ in the studio below' : `Make ${p.name} speak →`}</span>`;
+      b.addEventListener('click', () => {
+        studio.persona = p.id;
+        for (const el of wrap.children) {
+          el.classList.toggle('selected', el === b);
+          const use = el.querySelector('.mc-use');
+          if (use) use.textContent = el === b ? '✓ in the studio below' : `Make ${el.querySelector('.mc-name').textContent} speak →`;
+        }
+        document.getElementById('persona-form').hidden = true;
+        const strip = document.getElementById('pc-strip');
+        if (p.imageUrl) { strip.hidden = false; document.getElementById('pc-face').src = p.imageUrl; }
+        document.getElementById('pc-pname').textContent = p.name;
+        document.getElementById('pc-pstate').textContent = p.consentGranted ? 'consented · cloned local voice' : 'no consent';
+        const compose = document.getElementById('persona-compose');
+        compose.hidden = false;
+        document.getElementById('pc-title').textContent = `Make ${p.name} speak`;
+        if (!document.getElementById('pf-script').value) compose.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      b.querySelector('.pc-pick').addEventListener('click', async (ev) => {
+        ev.stopPropagation();
+        if (b.dataset.preview) return playWav(b.dataset.preview);
+        const btn = ev.currentTarget;
+        btn.disabled = true; btn.textContent = 'cloning…';
+        try {
+          const r = await fetch('/api/speak', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ personaId: p.id, script: `Hi, I am ${p.name}. This is my locally cloned voice.` }) });
+          if (!r.ok) throw new Error((await r.json()).error);
+          const { wav } = await r.json();
+          b.dataset.preview = wav;
+          playWav(wav);
+          btn.textContent = '▶ Hear voice';
+        } catch (e) { btn.textContent = e.message.slice(0, 30); }
+        btn.disabled = false;
+      });
+      b.querySelector('.pc-del').addEventListener('click', async (ev) => {
+        ev.stopPropagation();
+        if (!confirm(`Delete ${p.name} and their cloned voice? This revokes recorded consent.`)) return;
+        await fetch(`/api/personas?id=${p.id}`, { method: 'DELETE' });
+        studio.load();
+      });
+      return b;
+    }));
+    if (list.length) {
+      if (!studio.persona && list[0].hasVoiceSample) wrap.querySelector('.persona-card')?.click();
+      else document.getElementById('persona-compose').hidden = !studio.persona;
+    }
+    // Seed the compose result slot with the latest persona film, so the payoff is visible up front.
+    try {
+      const vids = await (await fetch('/api/videos')).json();
+      const talk = vids.find((v) => v.talk);
+      if (talk) {
+        const v = document.getElementById('pc-result');
+        v.src = talk.url; v.poster = talk.poster || ''; v.hidden = false;
+        document.getElementById('pf-status').textContent = `Latest persona film (${talk.duration ?? '?'}s) — make a new one above.`;
+      }
+    } catch { /* history unavailable */ }
+  },
+};
+function playWav(url) {
+  const wrap = document.getElementById('pc-preview');
+  const a = document.getElementById('pf-audio');
+  wrap.hidden = false; a.src = url; a.play().catch(() => {});
+}
+document.getElementById('new-persona').addEventListener('click', () => { document.getElementById('persona-form').hidden = false; });
+document.getElementById('pf-consent').addEventListener('change', (e) => { document.getElementById('pf-create').disabled = !e.target.checked; });
+document.getElementById('pf-script').addEventListener('input', (e) => { document.getElementById('pc-count').textContent = `${e.target.value.length}/400`; });
+async function pollFilm(id, statusEl) {
+  for (let i = 0; i < 200; i++) {
+    let j;
+    try { j = await (await fetch(`/api/status/${id}`)).json(); } catch { j = null; }
+    if (j?.state === 'done') {
+      const v = document.getElementById('pc-result');
+      v.src = j.videoUrl; v.hidden = false;
+      statusEl.textContent = 'Film ready — playing below.';
+      return;
+    }
+    if (j?.state === 'error') { statusEl.textContent = `Film failed: ${j.error || 'engine error'}`; return; }
+    statusEl.textContent = `Filming… ${j?.node ? `${String(j.node).slice(0, 24)} ` : ''}${j?.progress != null ? `${Math.round(j.progress * 100)}%` : ''}`;
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+}
+document.getElementById('pf-create').addEventListener('click', async () => {
+  const name = document.getElementById('pf-name').value.trim();
+  const consent = document.getElementById('pf-consent').checked;
+  const consentName = document.getElementById('pf-consentname').value.trim();
+  const img = document.getElementById('pf-image').files[0];
+  const voc = document.getElementById('pf-voice').files[0];
+  if (!name || !img) return alert('Name and face image are required.');
+  if (!consent || !consentName) return alert('No consent, no clone — that is the rule. Name the consent giver and tick the box.');
+  const st = (id) => document.getElementById(id);
+  st('pf-create').disabled = true; st('pf-create').textContent = 'Creating…';
+  try {
+    const fd1 = new FormData(); fd1.append('image', img, img.name);
+    const r1 = await (await fetch('/api/persona-image', { method: 'POST', body: fd1 })).json();
+    let voiceName = null;
+    if (voc) {
+      const fd2 = new FormData(); fd2.append('file', voc, voc.name);
+      const r2 = await (await fetch('/api/persona-voice', { method: 'POST', body: fd2 })).json();
+      voiceName = r2.name;
+    }
+    const r = await fetch('/api/personas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+      name, tagline: st('pf-tag').value, image: r1.name, voiceSample: voiceName, voiceRefText: st('pf-reftext').value,
+      consent: { granted: consent, name: consentName },
+    }) });
+    if (!r.ok) throw new Error((await r.json()).error);
+    document.getElementById('persona-form').hidden = true;
+    studio.load();
+  } catch (e) { alert(e.message); }
+  st('pf-create').disabled = false; st('pf-create').textContent = 'Create persona';
+});
+document.getElementById('pf-speak').addEventListener('click', async () => {
+  const script = document.getElementById('pf-script').value.trim();
+  if (!script || !studio.persona) return;
+  const s = document.getElementById('pf-status');
+  s.textContent = 'Cloning voice locally…';
+  try {
+    const r = await fetch('/api/speak', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ personaId: studio.persona, script }) });
+    if (!r.ok) throw new Error((await r.json()).error);
+    const { wav } = await r.json();
+    playWav(wav);
+    s.textContent = 'Voice ready — listen, then generate the film.';
+  } catch (e) { s.textContent = e.message; }
+});
+document.getElementById('pf-film').addEventListener('click', async () => {
+  const script = document.getElementById('pf-script').value.trim();
+  if (!script || !studio.persona) return;
+  const s = document.getElementById('pf-status');
+  document.getElementById('pc-result').hidden = true;
+  s.textContent = 'Cloning the voice, then filming — minutes, all local.';
+  try {
+    const r = await fetch('/api/film', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ personaId: studio.persona, script }) });
+    if (!r.ok) throw new Error((await r.json()).error);
+    const j = await r.json();
+    addPendingCard(j.id, script.slice(0, 80), 'landscape');
+    playWav(j.voice);
+    pollFilm(j.id, s);
+  } catch (e) { s.textContent = e.message; }
+});
+studio.load();

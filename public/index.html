@@ -25,12 +25,48 @@
 </header>
 
 <main id="main">
-  <section id="model-picker" class="model-picker" aria-label="Choose a video model">
-    <div id="model-cards" class="model-cards" role="radiogroup" aria-label="Video models"></div>
+
+  <section id="persona-studio" class="studio" aria-labelledby="studio-title">
+    <div class="library-head"><h2 id="studio-title">Persona studio</h2><span class="muted">consent-first · local clones · for your films</span></div>
+    <div id="persona-cards" class="model-cards" role="radiogroup" aria-label="Personas"></div>
+    <button id="new-persona" type="button" class="ghost">+ New persona</button>
+    <div id="persona-form" class="drawer-card" style="margin:14px auto" hidden>
+      <h2 style="font-size:1rem">Create a persona</h2>
+      <h3 class="step-h">1 · Identity</h3>
+      <label class="field"><span>Name</span><input id="pf-name" type="text" placeholder="e.g. Nova"></label>
+      <label class="field"><span>Tagline</span><input id="pf-tag" type="text" placeholder="e.g. calm narrator"></label>
+      <label class="field"><span>Face image</span><input id="pf-image" type="file" accept="image/*"></label>
+      <h3 class="step-h">2 · Voice (optional — a 10–20s sample of the speaker, with their consent)</h3>
+      <label class="field"><span>Voice sample</span><input id="pf-voice" type="file" accept="audio/*"></label>
+      <label class="field"><span>What the sample says (transcript)</span><input id="pf-reftext" type="text" placeholder="type the words spoken in the sample"></label>
+      <h3 class="step-h">3 · Consent — required</h3>
+      <label class="field"><span>The person shown and heard has agreed to be cloned</span>
+        <span style="display:flex;gap:8px;align-items:start;font-size:.85rem;color:var(--muted)">
+          <input id="pf-consent" type="checkbox" style="margin-top:4px">
+          <span>I am that person or hold their written permission. I understand no one else's likeness or voice may be used. I can delete this persona and its cloned voice at any time.</span>
+        </span>
+      </label>
+      <label class="field"><span>Consent given by (your name)</span><input id="pf-consentname" type="text" placeholder="full name"></label>
+      <button id="pf-create" type="button" class="primary" style="align-self:flex-start" disabled>Create persona</button>
+      <p class="field-note">Voices are cloned locally with F5-TTS (code MIT; model weights CC-BY-NC — personal, non-commercial use).</p>
+    </div>
+    <div id="persona-compose" class="compose" hidden>
+      <div id="pc-strip" class="pc-strip" hidden><img id="pc-face" alt="Persona face"><span><strong id="pc-pname">—</strong><br><span class="mc-on" id="pc-pstate">consented</span></span></div>
+      <div class="compose-head"><h3 id="pc-title" style="font-size:1rem">Make your persona speak</h3><span id="pc-count" class="muted">0/400</span></div>
+      <div class="compose-row">
+        <textarea id="pf-script" rows="3" maxlength="400" placeholder="Write what they should say — Kinema clones the voice locally, then films them speaking it."></textarea>
+        <button id="pf-speak" type="button" class="ghost">Preview voice</button>
+        <button id="pf-film" type="button" class="primary">Generate film</button>
+      </div>
+      <div id="pc-preview" hidden><span class="muted" style="font-size:.8rem">voice preview</span><audio id="pf-audio" controls style="width:100%"></audio></div>
+      <video id="pc-result" controls playsinline preload="none" hidden style="width:100%;margin-top:10px;border-radius:10px"></video>
+      <p id="pf-status" class="field-note"></p>
+    </div>
   </section>
 
+
   <section id="hero" class="hero" aria-labelledby="hero-title">
-    <h1 id="hero-title">What do you want to see?</h1>
+    <h1 id="hero-title">…or film a scene without a persona</h1>
     <p class="hero-sub">Describe it in a sentence. Kinema makes the video — right here on this machine.</p>
     <form id="compose" class="compose" autocomplete="off">
       <div class="compose-row">
@@ -70,6 +106,10 @@
         </label>
       </div>
     </form>
+  </section>
+
+  <section id="model-picker" class="model-picker" aria-label="Choose a video model">
+    <div id="model-cards" class="model-cards" role="radiogroup" aria-label="Video models"></div>
   </section>
 
   <section id="library" class="library" aria-labelledby="library-title" hidden>

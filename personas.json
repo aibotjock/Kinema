@@ -1,0 +1,16 @@
+[
+  {
+    "id": "pmt50ub1r",
+    "name": "Nova",
+    "tagline": "synthetic narrator (no real person)",
+    "image": "persona-face.png",
+    "voiceSample": "media/voices/smoke-clone.wav",
+    "voiceRefText": "Welcome to the persona studio. This voice was cloned locally, with consent, and it is ready to star in your films.",
+    "consent": {
+      "granted": true,
+      "name": "aibotjock",
+      "date": "2026-08-22T23:40:42.735Z",
+      "note": "Synthetic face (thispersondoesnotexist) + bundled MIT test voice — no real person cloned"
+    }
+  }
+]

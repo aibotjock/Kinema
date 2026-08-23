@@ -4,8 +4,8 @@
 // ComfyUI per GPU — and generations dispatch to the least-loaded engine.
 import http from 'node:http';
 import { Readable } from 'node:stream';
-import { readFile, writeFile, readdir, mkdir } from 'node:fs/promises';
-import { execFile } from 'node:child_process';
+import { readFile, writeFile, readdir, mkdir, unlink } from 'node:fs/promises';
+import { execFile, execSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { buildWorkflow } from './workflow.mjs';
 import { buildH3 } from './workflows/h3.mjs';
 import { buildHunyuan } from './workflows/hunyuan.mjs';
+import { buildTalk, talkLength } from './workflows/infinitetalk.mjs';
 import { MODELS, DEFAULT_MODEL } from './models.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -163,6 +164,7 @@ async function videoHistory() {
           out.push({
             id,
             prompt: job?.prompt ?? guessPromptFromHistory(h),
+            talk: Boolean(job?.talk),
             created: createdFromHistory(h),
             url: `/api/view?filename=${encodeURIComponent(filename)}&subfolder=${encodeURIComponent(subfolder || '')}&type=${encodeURIComponent(type || 'output')}`,
             poster: await posterFor(filename, subfolder),
@@ -218,7 +220,35 @@ async function posterFor(filename, subfolder) {
   } catch { return null; }
 }
 
-// ---------- gauntlet progress ledger ----------
+// ---------- personas (consent-first) ----------
+const PERSONAS = path.join(ROOT, 'personas.json');
+async function readPersonas() { try { return JSON.parse(await readFile(PERSONAS, 'utf8')); } catch { return []; } }
+async function writePersonas(list) { await writeFile(PERSONAS, JSON.stringify(list, null, 2)); }
+
+const VOICE_VENV = path.join(ROOT, '.venv-voice', 'bin', 'f5-tts_infer-cli');
+function freestGpu() {
+  try {
+    const out = execSync('nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits').toString().trim().split('\n')
+      .map((l) => l.split(',').map((s) => Number(s.trim())))
+      .sort((a, b) => a[1] - b[1]);
+    return out[0]?.[0] ?? 0;
+  } catch { return 0; }
+}
+async function synthesizeVoice(persona, script) {
+  // F5-TTS zero-shot clone from the consented reference sample (isolated venv, freest GPU).
+  const out = path.join(ROOT, 'media', 'voices', `${persona.id}-${Date.now()}.wav`);
+  const args = [
+    '--ref_audio', path.join(ROOT, persona.voiceSample),
+    '--ref_text', persona.voiceRefText || ' ',
+    '--gen_text', script.slice(0, 800),
+    '--output_dir', path.dirname(out), '--output_file', path.basename(out),
+  ];
+  const env = { ...process.env, CUDA_VISIBLE_DEVICES: String(freestGpu()) };
+  await execAsync(VOICE_VENV, args, { env, timeout: 600000 });
+  return { wav: `/media/voices/${path.basename(out)}`, file: out };
+}
+
+
 async function writeProgress(entry) {
   const file = path.join(ROOT, 'PROGRESS.json');
   let data = { rounds: [] };
@@ -310,6 +340,114 @@ const server = http.createServer(async (req, res) => {
       const file = path.normalize(path.join(THUMBS, url.pathname.slice('/thumb/'.length)));
       if (!file.startsWith(THUMBS) || !existsSync(file)) return send(404, 'no poster', 'text/plain');
       return send(200, await readFile(file), 'image/jpeg');
+    }
+    if (url.pathname === '/api/personas' && req.method === 'GET') {
+      const list = await readPersonas();
+      return send(200, list.map(({ id, name, tagline, consent, image, voiceSample }) => ({ id, name, tagline, consentGranted: consent?.granted, consentBy: consent?.name, consentDate: consent?.date, image, imageUrl: image ? `/api/view?filename=${encodeURIComponent(image)}&type=input` : null, hasVoiceSample: Boolean(voiceSample) })));
+    }
+    if (url.pathname === '/api/personas' && req.method === 'DELETE') {
+      // Revocation: removing a persona also deletes its cloned voice files.
+      const id = url.searchParams.get('id');
+      const list = await readPersonas();
+      const persona = list.find((p) => p.id === id);
+      if (!persona) return send(404, { error: 'unknown persona' });
+      await writePersonas(list.filter((p) => p.id !== id));
+      try {
+        const dir = path.join(ROOT, 'media', 'voices');
+        for (const f of await readdir(dir)) if (f.startsWith(`${persona.id}-`)) await unlink(path.join(dir, f));
+      } catch { /* nothing to clean */ }
+      return send(200, { ok: true });
+    }
+    if (url.pathname === '/api/personas' && req.method === 'POST') {
+      const body = await readBody(req); // JSON {name, tagline, image (uploaded name), voiceSample, voiceRefText, consent:{granted,name,note}}
+      if (!body.name?.trim()) return send(400, { error: 'name required' });
+      if (!body.image) return send(400, { error: 'persona image required' });
+      if (!body.consent?.granted || !body.consent?.name?.trim()) {
+        return send(403, { error: 'consent required: the person shown (or their rights holder) must be named and must have agreed. No consent, no clone.' });
+      }
+      const list = await readPersonas();
+      const persona = {
+        id: `p${Date.now().toString(36)}`,
+        name: body.name.trim(),
+        tagline: body.tagline?.trim() || '',
+        image: body.image,
+        voiceSample: body.voiceSample || null,
+        voiceRefText: body.voiceRefText || '',
+        consent: { granted: true, name: body.consent.name.trim(), date: new Date().toISOString(), note: body.consent.note || '' },
+      };
+      if (persona.voiceSample && !persona.voiceRefText) return send(400, { error: 'voiceRefText required with a voice sample — the sample must be transcribed so the clone is grounded' });
+      list.push(persona);
+      await writePersonas(list);
+      return send(200, { id: persona.id });
+    }
+    if (url.pathname === '/api/persona-voice' && req.method === 'POST') {
+      // multipart: fields file (wav) -> saved to media/voices; returns {name}
+      const engine = engines.find((e) => e.alive) || engines[0];
+      const chunks = [];
+      for await (const c of req) chunks.push(c);
+      const body = Buffer.concat(chunks);
+      const up = await fetch(`${engine.url}/upload/image`, { method: 'POST', headers: { 'content-type': req.headers['content-type'] }, body });
+      if (!up.ok) {
+        // fallback: save raw to media/uploads (name from header)
+        const m = /filename="([^"]+)"/.exec(req.headers['content-type'] + JSON.stringify(req.headers)) || null;
+        const fname = `sample-${Date.now()}.wav`;
+        const { writeFile: wf } = await import('node:fs/promises');
+        await wf(path.join(ROOT, 'media', 'voices', fname), body);
+        return send(200, { name: fname });
+      }
+      const j = await up.json();
+      return send(200, { name: j.name });
+    }
+    if (url.pathname === '/api/persona-image' && req.method === 'POST') {
+      const engine = engines.find((e) => e.alive) || engines[0];
+      const chunks = [];
+      for await (const c of req) chunks.push(c);
+      const up = await fetch(`${engine.url}/upload/image`, { method: 'POST', headers: { 'content-type': req.headers['content-type'] }, body: Buffer.concat(chunks) });
+      const j = await up.json();
+      return send(up.status, j);
+    }
+    if (url.pathname === '/api/speak' && req.method === 'POST') {
+      const { personaId, script } = await readBody(req);
+      const persona = (await readPersonas()).find((p) => p.id === personaId);
+      if (!persona) return send(404, { error: 'unknown persona' });
+      if (!persona.voiceSample) return send(400, { error: 'this persona has no consented voice sample yet' });
+      if (!script?.trim()) return send(400, { error: 'script required' });
+      try {
+        const { wav } = await synthesizeVoice(persona, script);
+        return send(200, { wav });
+      } catch (e) { return send(500, { error: `voice synthesis failed: ${e.message}` }); }
+    }
+    if (url.pathname === '/api/film' && req.method === 'POST') {
+      const { personaId, script, prompt } = await readBody(req);
+      const persona = (await readPersonas()).find((p) => p.id === personaId);
+      if (!persona) return send(404, { error: 'unknown persona' });
+      if (!script?.trim()) return send(400, { error: 'script required' });
+      let voice;
+      try { voice = await synthesizeVoice(persona, script); } catch (e) { return send(500, { error: `voice synthesis failed: ${e.message}` }); }
+      // audio length -> video length
+      let secs = 10;
+      try {
+        let stderr = '';
+        try { const r = await execAsync(FFMPEG, ['-i', voice.file, '-f', 'null', '-']); stderr = r.stderr || ''; } catch (e) { stderr = e.stderr || ''; }
+        const m = stderr.match(/Duration: (\d+):(\d+):(\d+)/);
+        if (m) secs = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+      } catch { /* default */ }
+      const engine = await pickEngine();
+      const audioName = path.basename(voice.file);
+      // ComfyUI LoadAudio reads from input/ dir — copy wav there
+      const { copyFile, mkdir } = await import('node:fs/promises');
+      await mkdir(path.join(process.env.HOME, 'ComfyUI', 'input'), { recursive: true });
+      await copyFile(voice.file, path.join(process.env.HOME, 'ComfyUI', 'input', audioName));
+      const workflow = buildTalk({ audioFile: audioName, imageFile: persona.image, prompt: prompt || 'a person talking naturally to camera', audioSeconds: secs, engineTag: engine.tag });
+      const { prompt_id } = await comfy(engine, '/prompt', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt: workflow, client_id: engine.clientId }) });
+      jobs.set(prompt_id, { id: prompt_id, prompt: script, state: 'running', engineId: engine.id, talk: true, videoUrl: null, error: null, created: Date.now() });
+      return send(200, { id: prompt_id, voice: voice.wav, audioSeconds: secs });
+    }
+    if (url.pathname.startsWith('/media/') && req.method === 'GET') {
+      const file = path.normalize(path.join(ROOT, url.pathname));
+      if (!file.startsWith(path.join(ROOT, 'media'))) return send(403, 'forbidden', 'text/plain');
+      if (!existsSync(file)) return send(404, 'not found', 'text/plain');
+      return send(200, await readFile(file), MIME[path.extname(file)] || 'application/octet-stream');
     }
     if (url.pathname === '/api/progress-note' && req.method === 'POST') {
       await writeProgress(await readBody(req));

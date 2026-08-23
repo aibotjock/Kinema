@@ -101,6 +101,18 @@
       "round": "model-selector",
       "event": "GAUNTLET-UNANIMOUS",
       "note": "Picker gauntlet FINAL: 3/3 blind wins — Replicate video browse OURS, Runway picker surface OURS, HF Spaces OURS (re-captured after forfeit detection, re-judged clean). Exit condition met. Polish backlog from critics: spec-string noise, Wan badge consistency, card truncation."
+    },
+    {
+      "t": "2026-08-23T21:01:23.894Z",
+      "piece": "setup",
+      "verdict": "functional",
+      "notes": "InfiniteTalk chain fixed + verified end-to-end 2026-08-23: graph pruning (dead sg1 demo subtree), loader widget-shift fixes, mode combo string, fps 16→25 length sync. First 6.12s synced talking film cvu_00018 rendered via /api/film."
+    },
+    {
+      "t": "2026-08-23T21:27:22.968Z",
+      "piece": "round-2",
+      "verdict": "3-of-5 clinched",
+      "notes": "R2 (sides flipped): persona-creation, consent-capture, library win 2/2 both rounds. voice-clone split 1/1 (mobile: studio below fold). narration-video 0/2 (model picker dominates; script flow not primary). Round 3: persona-first hierarchy."
     }
   ]
 }

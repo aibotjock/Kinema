@@ -284,3 +284,25 @@ textarea#prompt::placeholder { color: #6d6d7c; }
 }
 .i2v-drop.drag, .i2v-drop:hover { border-color: rgba(236, 234, 249, 0.5); color: var(--text); }
 .i2v-drop img { max-height: 120px; max-width: 200px; border-radius: 10px; }
+
+/* ---------- persona studio round 2 ---------- */
+.step-h { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 12px 0 2px; }
+.compose-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.mc-face { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; }
+.persona-card { cursor: pointer; }
+.pc-actions { display: flex; gap: 8px; margin-top: auto; }
+.pc-btn { font: inherit; font-size: .8rem; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+.pc-btn:hover { border-color: rgba(167, 139, 250, 0.6); }
+.pc-btn:disabled { opacity: .5; cursor: default; }
+.pc-del { color: var(--muted); }
+@media (max-width: 720px) {
+  .model-cards { flex-direction: column; overflow-x: visible; }
+  .model-card { flex-basis: auto; }
+  .mc-face { height: 110px; }
+}
+.mc-exp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mc-use { font-size: .8rem; color: #a78bfa; }
+.persona-card:hover { border-color: rgba(167, 139, 250, 0.6); }
+.pc-strip { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+.pc-strip img { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; }
+@media (min-width: 1000px) { #persona-compose .compose-row { max-width: 860px; } }
