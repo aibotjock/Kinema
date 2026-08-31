@@ -119,6 +119,24 @@
       "piece": "final",
       "verdict": "unanimous exit — all 5 pieces beat the HeyGen bar blind",
       "notes": "R6 narration-video ours 2/2 (persona strip + seeded result film + persona-first hierarchy + demoted scene branch). Rounds: narration 0/2,0/2,0/2,VOID(contaminated reads),0/2,2/2. Others clinched by R2/R3. R4 lesson: never reuse evidence filenames across rounds; R5/R6 critics verified md5s + flagged own misreads."
+    },
+    {
+      "t": "2026-08-31T05:02:23.000Z",
+      "round": "heygen-local",
+      "event": "gauntlet-start",
+      "note": "Goal: simplified HeyGen, 100% local (no cloud) — as many 30s-capable models as disk/GPUs honestly support, superb voice-to-video lip sync, studio-quality voice library + personal voice clone, personal avatar creation. Bars: HeyGen product pages + avatar demos (overall), Comfy.org LTX-2.5 official samples + 3-shot chaining workflow (30s quality). Measurable half: ffprobe 29.5-30.5s @ >=720p24 with audio; lip-sync score on scripted phrase; whole flow works with outbound network blocked. 11 pieces tracked. Parallel understand + model-research workflows launched. Note: LTX-2.3 GGUF in LM Studio is unusable for ComfyUI (GGUF != safetensors); official LTX-2.5 ComfyUI artifact to be installed instead."
+    },
+    {
+      "t": "2026-08-31T05:23:43.853Z",
+      "round": "heygen-local",
+      "event": "fresh-install-audit",
+      "note": "Machine truth: ComfyUI was absent (only models/ survived /mnt/data loss). Reinstalled: ComfyUI 0.34.0, torch 2.13.0+cu130, both 3090s OK, engines on :8188/:8189. Integrity scan of surviving weights: umt5_xxl (2.8/6.7GB) and wan2.2 high-noise (5.3/14.3GB) TRUNCATED; vae + both lightx2v LoRAs OK; low-noise 14B absent. Redownloading: umt5 (now), low-noise 14B (in flight); high-noise gated on install plan. Smoke render attempt correctly caught corrupt umt5 via execution_error — evidence-first debugging working."
+    },
+    {
+      "t": "2026-08-31T05:28:01.048Z",
+      "round": "heygen-local",
+      "event": "smoke-pass",
+      "note": "Fresh-install chain PROVEN: low-noise single-pass smoke render (seed 42 koi 2s) executed on GPU0 in ~40s -> cvu-smoke2_00001_.mp4; Kinema history merge + ffmpeg poster + duration extraction all verified through /api/videos. Working set on disk now: umt5 (verified 6.74GB), wan2.2 low-noise (verified 14.29GB), vae + 2x lightx2v LoRAs. Still corrupt: wan2.2 high-noise (5.3/14.3GB). Remaining lane decision (Wan T2V repair vs Wan2.1-I2V+InfiniteTalk vs LTX-2.5) gated on research plan + 64GB free."
     }
   ]
 }

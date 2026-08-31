@@ -1,0 +1,372 @@
+{
+  "config": {},
+  "extra": {
+    "VHS_KeepIntermediate": true,
+    "VHS_MetadataImage": true,
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "ds": {
+      "offset": [
+        101.73619764624435,
+        -340.73096227068197
+      ],
+      "scale": 0.8765169902912622
+    },
+    "frontendVersion": "1.48.7"
+  },
+  "groups": [],
+  "id": "b5b3b1f9-22b3-4a9e-b0a8-5cd8057821cc",
+  "last_link_id": 7,
+  "last_node_id": 6,
+  "links": [
+    [
+      5,
+      4,
+      0,
+      6,
+      0,
+      "IMAGE"
+    ],
+    [
+      6,
+      5,
+      0,
+      6,
+      1,
+      "IMAGE"
+    ],
+    [
+      7,
+      6,
+      0,
+      2,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "nodes": [
+    {
+      "flags": {},
+      "id": 2,
+      "inputs": [
+        {
+          "link": 7,
+          "localized_name": "video",
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "link": null,
+          "localized_name": "filename_prefix",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "format",
+          "name": "format",
+          "type": "COMBO",
+          "widget": {
+            "name": "format"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "codec",
+          "name": "codec",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "widget": {
+            "name": "codec"
+          }
+        }
+      ],
+      "mode": 0,
+      "order": 3,
+      "outputs": [
+        {
+          "links": null,
+          "localized_name": "video",
+          "name": "video",
+          "type": "VIDEO"
+        }
+      ],
+      "pos": [
+        1150,
+        550
+      ],
+      "properties": {},
+      "size": [
+        490,
+        126
+      ],
+      "type": "SaveVideo",
+      "widgets_values": [
+        "video/LTX-2.5_flf2v",
+        "auto",
+        "auto"
+      ],
+      "widgets_values_named": {
+        "codec": "auto",
+        "filename_prefix": "video/LTX-2.5_flf2v",
+        "format": "auto"
+      }
+    },
+    {
+      "flags": {},
+      "id": 4,
+      "inputs": [
+        {
+          "link": null,
+          "localized_name": "image",
+          "name": "image",
+          "type": "COMBO",
+          "widget": {
+            "name": "image"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "choose file to upload",
+          "name": "upload",
+          "type": "IMAGEUPLOAD",
+          "widget": {
+            "name": "upload"
+          }
+        }
+      ],
+      "mode": 0,
+      "order": 0,
+      "outputs": [
+        {
+          "links": [
+            5
+          ],
+          "localized_name": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE"
+        },
+        {
+          "links": null,
+          "localized_name": "MASK",
+          "name": "MASK",
+          "type": "MASK"
+        }
+      ],
+      "pos": [
+        320,
+        550
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "size": [
+        320,
+        374
+      ],
+      "type": "LoadImage",
+      "widgets_values": [
+        "porsche_car_01.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "porsche_car_01.png",
+        "upload": "image"
+      }
+    },
+    {
+      "flags": {},
+      "id": 5,
+      "inputs": [
+        {
+          "link": null,
+          "localized_name": "image",
+          "name": "image",
+          "type": "COMBO",
+          "widget": {
+            "name": "image"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "choose file to upload",
+          "name": "upload",
+          "type": "IMAGEUPLOAD",
+          "widget": {
+            "name": "upload"
+          }
+        }
+      ],
+      "mode": 0,
+      "order": 1,
+      "outputs": [
+        {
+          "links": [
+            6
+          ],
+          "localized_name": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE"
+        },
+        {
+          "links": null,
+          "localized_name": "MASK",
+          "name": "MASK",
+          "type": "MASK"
+        }
+      ],
+      "pos": [
+        318.8056420906888,
+        979.8143821391485
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "size": [
+        320,
+        374
+      ],
+      "type": "LoadImage",
+      "widgets_values": [
+        "porsche_car_02.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "porsche_car_02.png",
+        "upload": "image"
+      }
+    },
+    {
+      "bgcolor": "#653",
+      "color": "#432",
+      "flags": {},
+      "id": 6,
+      "inputs": [
+        {
+          "link": 5,
+          "localized_name": "image",
+          "name": "image",
+          "type": "IMAGE"
+        },
+        {
+          "link": 6,
+          "localized_name": "last_frame",
+          "name": "last_frame",
+          "shape": 7,
+          "type": "IMAGE"
+        },
+        {
+          "link": null,
+          "localized_name": "model",
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "widget": {
+            "name": "model"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "model.duration",
+          "name": "model.duration",
+          "type": "COMBO",
+          "widget": {
+            "name": "model.duration"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "model.resolution",
+          "name": "model.resolution",
+          "type": "COMBO",
+          "widget": {
+            "name": "model.resolution"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "model.fps",
+          "name": "model.fps",
+          "type": "COMBO",
+          "widget": {
+            "name": "model.fps"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "model.generate_audio",
+          "name": "model.generate_audio",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "model.generate_audio"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "prompt",
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "link": null,
+          "localized_name": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          }
+        }
+      ],
+      "mode": 0,
+      "order": 2,
+      "outputs": [
+        {
+          "links": [
+            7
+          ],
+          "localized_name": "VIDEO",
+          "name": "VIDEO",
+          "type": "VIDEO"
+        }
+      ],
+      "pos": [
+        700,
+        550
+      ],
+      "properties": {
+        "Node name for S&R": "LtxApi25ImageToVideo"
+      },
+      "size": [
+        400,
+        286
+      ],
+      "type": "LtxApi25ImageToVideo",
+      "widgets_values": [
+        "LTX-2.5 (Pro)",
+        "5",
+        "1280x720",
+        "25",
+        true,
+        "The camera opens on a WIDE SHOT of a matte grey Porsche sports car in a minimalist concrete showroom, its sleek silhouette reflected in the polished floor, soft overhead light washing evenly over the bodywork. The car stands motionless, sculpted wheel arches and dark alloy wheels catching the light, the matte paint smooth and flawless. The camera drifts slowly around the vehicle in a smooth, unhurried arc, the angle gradually opening from a front three-quarter view to a front-side profile, reflections gliding across the bodywork at the same gentle pace, no abrupt movement, seamless and natural. The showroom is almost silent: a single soft piano note sounds every few seconds, barely audible, fading gently over a faint ambient pad, the quiet hum of the space the only constant presence. Photorealistic, sharp vehicle details, anamorphic lens, shallow depth of field, consistent ambient tone, stable exposure, no dramatic light changes. No text, no black frames.",
+        42,
+        "randomize"
+      ],
+      "widgets_values_named": {
+        "control_after_generate": "randomize",
+        "model": "LTX-2.5 (Pro)",
+        "model.duration": "5",
+        "model.fps": "25",
+        "model.generate_audio": true,
+        "model.resolution": "1280x720",
+        "prompt": "The camera opens on a WIDE SHOT of a matte grey Porsche sports car in a minimalist concrete showroom, its sleek silhouette reflected in the polished floor, soft overhead light washing evenly over the bodywork. The car stands motionless, sculpted wheel arches and dark alloy wheels catching the light, the matte paint smooth and flawless. The camera drifts slowly around the vehicle in a smooth, unhurried arc, the angle gradually opening from a front three-quarter view to a front-side profile, reflections gliding across the bodywork at the same gentle pace, no abrupt movement, seamless and natural. The showroom is almost silent: a single soft piano note sounds every few seconds, barely audible, fading gently over a faint ambient pad, the quiet hum of the space the only constant presence. Photorealistic, sharp vehicle details, anamorphic lens, shallow depth of field, consistent ambient tone, stable exposure, no dramatic light changes. No text, no black frames.",
+        "seed": 42
+      }
+    }
+  ],
+  "revision": 0,
+  "version": 0.4
+}

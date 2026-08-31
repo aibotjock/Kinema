@@ -1,8 +1,12 @@
 node_modules/
 .thumbs/
-references/
 *.log
 evidence/
 .venv-voice/
-evidence/
 media/
+
+# Bar reference media stays local — large binaries, re-fetchable, sources
+# documented in references/bar/INDEX.md and checksummed in SHA256SUMS.txt.
+# Text artifacts (INDEX.md, SHA256SUMS.txt, workflow JSONs, screenshots) are versioned.
+references/bar/**/*.mp4
+references/bar/**/*.webm
