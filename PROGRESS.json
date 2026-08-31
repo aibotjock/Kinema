@@ -137,6 +137,12 @@
       "round": "heygen-local",
       "event": "smoke-pass",
       "note": "Fresh-install chain PROVEN: low-noise single-pass smoke render (seed 42 koi 2s) executed on GPU0 in ~40s -> cvu-smoke2_00001_.mp4; Kinema history merge + ffmpeg poster + duration extraction all verified through /api/videos. Working set on disk now: umt5 (verified 6.74GB), wan2.2 low-noise (verified 14.29GB), vae + 2x lightx2v LoRAs. Still corrupt: wan2.2 high-noise (5.3/14.3GB). Remaining lane decision (Wan T2V repair vs Wan2.1-I2V+InfiniteTalk vs LTX-2.5) gated on research plan + 64GB free."
+    },
+    {
+      "t": "2026-08-31T05:59:14.567Z",
+      "round": "heygen-local",
+      "event": "session-resume",
+      "note": "Session resumed: checkpoint pushed to GitHub (heygen-local branch, SSH key auth). Dual engines restarted (0.34.0, :8188/:8189, ready:2), LM Studio stopped so both 3090s free. Smoke re-proven post-resume: cvu-smoke3 seed-42 koi 2s single-pass low-noise in 37.24s, ffprobe 832x480 h264 16fps 2.06s. Lane decision next."
     }
   ]
 }
